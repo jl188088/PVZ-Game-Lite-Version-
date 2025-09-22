@@ -1,0 +1,390 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace PvZ
+{
+    public partial class Form1 : Form
+    {
+        public Form1()
+        {
+            InitializeComponent();
+        }
+
+        PictureBox bg;
+        PictureBox[][] ammo;
+        //PictureBox[][] bullets;
+        PictureBox[][] pix;
+        int[][] rank;
+        int[][] duration;
+        int[][] dmg;
+        int[] dmgType;
+        ProgressBar[][] bars;
+        Boolean[][] isLocked;
+        int[][] eHP;
+        PictureBox[][] enemy;
+
+        Random ran = new Random();
+        Boolean[] isAlive = new Boolean[3];
+        int[] bulletCtr = new int[3];
+        int bulletCount = 200;
+        int enemyCount = 5;
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            bg = new PictureBox();
+            this.Controls.Add(bg);
+            //bg.Image = Properties.Resources.bground;
+            bg.SizeMode = PictureBoxSizeMode.StretchImage;
+            bg.SetBounds(0, 250, this.Width, this.Height - 50);
+            bg.BackColor = Color.Black;
+            dmgType = new int[3];
+            dmgType[0] = 40;
+            dmgType[1] = 60;
+            dmgType[2] = 120;
+
+            ammo = new PictureBox[3][];
+            dmg = new int[3][];
+
+
+            for (int b = 0; b < 3; b++)
+            {
+                ammo[b] = new PictureBox[bulletCount];
+                dmg[b] = new int[bulletCount];
+                for (int c = 0; c < bulletCount; c++)
+                {
+                    ammo[b][c] = new PictureBox();
+                    ammo[b][c].SetBounds(0, 0, 20, 20);
+                    ammo[b][c].Visible = false;
+                    ammo[b][c].Image = Properties.Resources.bullet1;
+                    ammo[b][c].BackColor = Color.Black;
+                    bg.Controls.Add(ammo[b][c]);
+                }
+            }
+
+            bars = new ProgressBar[3][];
+            pix = new PictureBox[3][];
+            isLocked = new Boolean[3][];
+            enemy = new PictureBox[3][];
+            rank = new int[3][];
+            duration = new int[3][];
+            eHP = new int[3][];
+            for (int y = 0; y < 3;y++ )
+            {
+                pix[y] = new PictureBox[3];
+                bars[y] = new ProgressBar[3];
+                isLocked[y] = new Boolean[3];
+                rank[y] = new int[3];
+                duration[y] = new int[3];
+                enemy[y] = new PictureBox[enemyCount];
+                eHP[y] = new int[enemyCount];
+ 
+                for (int x = 0; x < 3; x++)
+                {
+                    isLocked[y][x] = false;
+                    pix[y][x] = new PictureBox();
+                    pix[y][x].SetBounds((200 * x),100 + (150 * y), 200, 150);
+                    pix[y][x].BorderStyle = BorderStyle.FixedSingle;
+                    //pix[y][x].BackColor = Color.Red;
+                    pix[y][x].MouseClick += new MouseEventHandler(this.click);
+                    pix[y][x].MouseHover += new EventHandler(this.hover);
+                    pix[y][x].MouseLeave += new EventHandler(this.leavee);
+
+                    bg.Controls.Add(pix[y][x]);
+                    bars[y][x] = new ProgressBar();
+                    bars[y][x].SetBounds((200 * x), 250 + (150 * y), 150, 20);
+                    bars[y][x].Maximum = 100;
+                    bars[y][x].BackColor = Color.Green;
+                    bars[y][x].BringToFront();
+
+                    bg.Controls.Add(bars[y][x]);
+                    bars[y][x].Visible = false;
+                }
+                for (int z = 0; z < enemyCount; z++)
+                {
+                    enemy[y][z] = new PictureBox();
+                    enemy[y][z].Image = Properties.Resources.enemy1;
+                    enemy[y][z].BackColor = Color.Transparent;
+                    enemy[y][z].SizeMode = PictureBoxSizeMode.Zoom;
+                    bg.Controls.Add(enemy[y][z]);
+                    enemy[y][z].Visible = false;
+
+
+                }
+            }
+        }
+        void click(object sender, EventArgs e)
+        {
+            for (int y = 0; y < 3; y++)
+            {
+                for (int x = 0; x < 3; x++)
+                {
+                    int p = Int32.Parse(foods.Text);
+                    if (sender.Equals(pix[y][x]) & !isLocked[y][x] & (p - tempCost >= 0))
+                    {
+
+                        p -= tempCost;
+                        pix[y][x].Image = tempImg;
+                        pix[y][x].SizeMode = PictureBoxSizeMode.Zoom;
+                        isLocked[y][x] = true;
+                        bars[y][x].Visible = true;
+                        rank[y][x] = tempRank;
+                        duration[y][x] = 100;
+                        
+                        tempImg = null;
+                        tempRank = 0;
+
+                        foods.Text = "" + p;
+                    }
+                }
+            }
+        }
+       void hover(object sender, EventArgs e)
+        {
+            for (int y = 0; y < 3; y++)
+            {
+                for (int x = 0; x < 3; x++)
+                {
+                    if (sender.Equals(pix[y][x]) & !isLocked[y][x])
+                    {
+                        pix[y][x].Image = tempImg;
+                        pix[y][x].SizeMode = PictureBoxSizeMode.Zoom;
+                    }
+                }
+            }
+        }
+        void leavee(object sender, EventArgs e)
+        {
+            for (int y = 0; y < 3; y++)
+            {
+                for (int x = 0; x < 3; x++)
+                {
+                    if (sender.Equals(pix[y][x]) & !isLocked[y][x])
+                    {
+                        pix[y][x].Image = null;
+                        pix[y][x].SizeMode = PictureBoxSizeMode.Zoom;
+                    }
+                }
+            }
+        }
+        Image tempImg;
+        int tempRank;
+        int tempCost;
+        private void pictureBox1_Click(object sender, EventArgs e)
+        {
+            tempImg = pictureBox1.Image;
+            tempRank = 0;
+            tempCost = Int32.Parse(cost1.Text);
+        }
+
+        private void pictureBox2_Click_1(object sender, EventArgs e)
+        {
+            tempImg = pictureBox2.Image;
+            tempRank = 1;
+            tempCost = Int32.Parse(cost2.Text);
+        }
+
+        private void pictureBox3_Click_1(object sender, EventArgs e)
+        {
+            tempImg = pictureBox3.Image;
+            tempRank = 2;
+            tempCost = Int32.Parse(cost2.Text);
+        }
+
+        private void pictureBox4_MouseHover(object sender, EventArgs e)
+        {
+
+        }
+
+        private void enemyGenerate_Tick(object sender, EventArgs e)
+        {
+            
+            int y = ran.Next(3);
+            for (int z = 0; z < enemyCount; z++)
+            {
+                if (!enemy[y][z].Visible)
+                {
+                    enemy[y][z].SetBounds(bg.Width, 100 + (150 * y), 250, 150);
+                    enemy[y][z].Visible = true;
+                    enemy[y][z].SizeMode = PictureBoxSizeMode.Zoom;
+                    enemy[y][z].BringToFront();
+                    eHP[y][z] = 120;
+                    break;
+                }
+            }
+        }
+
+        private void enemyMove_Tick(object sender, EventArgs e)
+        {
+            for (int x = 0; x < 3; x++)
+            {
+                for (int z = 0; z < enemyCount; z++)
+                {
+                    if (enemy[x][z].Visible)
+                    {
+                        enemy[x][z].Location = new Point(enemy[x][z].Location.X - 5, enemy[x][z].Location.Y);
+                    }
+                }
+            }
+        }
+
+        private void rangeCheck_Tick(object sender, EventArgs e)
+        {
+            for (int y = 0; y < 3; y++)
+            {
+                isAlive[y] = false;
+                for (int z = 0; z < enemyCount; z++)
+                {
+                    if (enemy[y][z].Visible)
+                    {
+                        isAlive[y] = true;
+                    }
+                }
+                if (isAlive[y])
+                {
+                    for (int x = 0; x < 3; x++)
+                    {
+                        if (isLocked[y][x])
+                        {
+                            ammo[y][bulletCtr[y]].Location = new Point(pix[y][x].Location.X + pix[y][x].Width, pix[y][x].Location.Y + 70);
+                            ammo[y][bulletCtr[y]].Visible = true;
+                            dmg[y][bulletCtr[y]] = dmgType[rank[y][x]];
+                            if (bulletCtr[y] < bulletCount - 1)
+                            {
+                                bulletCtr[y]++;
+                            }
+                            else
+                            {
+                                bulletCtr[y] = 0;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        private void bulletMove_Tick(object sender, EventArgs e)
+        {
+            for (int y = 0; y < 3; y++)
+            {
+                for (int b = 0; b < bulletCount; b++)
+                {
+                    if (ammo[y][b].Visible)
+                    {
+                        ammo[y][b].Location = new Point(ammo[y][b].Location.X + 10, ammo[y][b].Location.Y);
+                        for (int z = 0; z < enemyCount; z++)
+                        {
+                            if (enemy[y][z].Visible)
+                            {
+                                if (ammo[y][b].Bounds.IntersectsWith(enemy[y][z].Bounds))
+                                {
+                                    ammo[y][b].Visible = false;
+                                    eHP[y][z] -= dmg[y][b];
+                                    if (eHP[y][z] <= 0)
+                                    {
+                                        enemy[y][z].Visible = false;
+                                        int k = Int32.Parse(kills.Text);
+                                        k += 1;
+                                        kills.Text = ""+k;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        private void addFoods_Tick(object sender, EventArgs e)
+        {
+            int r = Int32.Parse(foods.Text);
+            r += 5;
+            foods.Text = "" + r;
+        }
+
+        private void durationCountDown_Tick(object sender, EventArgs e)
+        {
+            for (int r = 0; r < 3; r++)
+            {
+                for (int c = 0; c < 3; c++)
+                {
+                    if (duration[r][c] == 0)
+                    {
+                        pix[r][c].Image = null;
+                        isLocked[r][c] = false;
+                        bars[r][c].Visible = false;
+                    }
+                    else
+                    {
+                        duration[r][c]--;
+                        bars[r][c].Value = duration[r][c];
+                    }
+                }
+            }
+        }
+
+        private void death_Tick(object sender, EventArgs e)
+        {
+            for (int y = 0; y < 3; y++)
+            {
+                for (int b = 0; b < 3; b++)
+                {
+                    if(isLocked[y][b])
+                    {
+                        for (int z = 0; z < enemyCount; z++)
+                        {
+                            if (enemy[y][z].Visible)
+                            {
+                                if (pix[y][b].Bounds.IntersectsWith(enemy[y][z].Bounds))
+                                {
+                                    isLocked[y][b] = false;
+                                    pix[y][b].Image = null;
+                                    bars[y][b].Visible = false;
+
+                                }
+                            }
+                        }
+                    }
+
+                }
+            }
+        }
+
+        private void over_Tick(object sender, EventArgs e)
+        {
+            for (int y = 0; y < 3; y++)
+            {
+                for (int z = 0; z < enemyCount; z++)
+                {
+                    if (enemy[y][z].Visible)
+                    {
+                        if (enemy[y][z].Location.X <= -150)
+                        {
+                            enemyGenerate.Enabled = false;
+                            enemyMove.Enabled = false;
+                            rangeCheck.Enabled = false;
+                            bulletMove.Enabled = false;
+                            durationCountDown.Enabled = false;
+                            addFoods.Enabled = false;
+                            death.Enabled = false;
+                            over.Enabled = false;
+                            bs.Visible = false;
+                            gameover.Visible = true;
+                            
+                        }
+                    }
+                }
+
+            }
+        }
+
+        private void label1_Click(object sender, EventArgs e)
+        {
+
+        }
+    }
+}
